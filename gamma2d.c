@@ -18,7 +18,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <setjmp.h>
-#include <stb/stb_image_write.h>
 #include "gamma.h"
 
 #define LINE_SEARCH_THRESHOLD 0.000001
