@@ -30,7 +30,7 @@ struct gamma_analysis {
     double diff;        /* Percentage (<= 1.0, so 3% = 0.03), unless absolute 
                            normalization is selected, in which case it is an
                            absolute dose value */
-    double dta;         /* Millimeters (3mm = 3.0) */
+    double dta;         /* Same units as the input pixel spacings */
     double threshold;   /* Percentage (<= 1.0) */
     enum {
         GAMMA_NORM_LOCAL,   /* Measured dose is used to norm dose diff */
@@ -56,9 +56,9 @@ struct gamma_analysis {
  *      pass rate will be computed. 
  *      
  *  \returns Gamma pass rate, or GAMMA_SIG_VAL if an error occurred. Signal 
- *      value is returned if either the calculated distribution is zero, or 
- *      if no points in the measured distribution were above the low-dose 
- *      threshold. 
+ *      value is returned if either the calculated distribution is zero 
+ *      everywhere, or if no points in the measured distribution were above 
+ *      the low-dose threshold.
  */
 double gamma2d_compute(struct gamma_analysis *gamma,
                        const struct dose_distribution *meas,
