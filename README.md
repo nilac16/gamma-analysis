@@ -1,5 +1,7 @@
 # Gamma Analysis
 
+![Left to right: TPS dose, measured dose, gamma distribution. This particular field has a %GP of 95.33, at 3%/3mm, 10% low-dose threshold, and global normalization.](example.png)
+
 ANSI C implementation of the gamma analysis algorithm commonly used in medical physics. Comes in 2- and 3-dimensional versions, and optionally computes the gamma distribution.
 
 Running time is _Ω_(_M_<sup>2</sup>_γ<sup>k</sup>_) to calculate the distribution, or _Θ_(_M_<sup>2</sup>_γ<sup>k</sup>_) to calculate the pass rate, where
@@ -17,6 +19,9 @@ This implementation makes no allocations, and uses a fixed amount of stack space
 ## Usage
 
 The header defines two structs, first of which is the dose distribution:
+
+### Dose distribution
+
 ```C
 struct dose_distribution {
     double px_spacing[3];
@@ -34,6 +39,9 @@ where
 Each member array contains space for three elements, but only the first two are accessed by the 2D algorithm. The dose data is completely owned by the caller, and must be stored linearly in row-major order. Iliffe vectors are unsupported.
 
 The other struct contains the gamma parameters:
+
+### Gamma parameters
+
 ```C
 struct gamma_analysis {
     double diff;
@@ -58,6 +66,9 @@ where
 Please note that <b>percentages are unitized (e.g. 75% = 0.75)</b>.
 
 After setting up the relevant structs, a call to one of two functions can be made:
+
+### Functions
+
 ```C
 double gamma2d_compute(struct gamma_analysis *gamma,
                        const struct dose_distribution *meas,
