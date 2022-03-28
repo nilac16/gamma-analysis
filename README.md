@@ -1,6 +1,8 @@
 # Gamma Analysis
 
-![Left to right: TPS dose, measured dose, gamma distribution. This particular field has a %GP of 95.33, at 3%/3mm, 10% low-dose threshold, and global normalization.](example.png)
+<p align='center'>
+    <image src='example.png'>
+</p>
 
 ANSI C implementation of the gamma analysis algorithm commonly used in medical physics. Comes in 2- and 3-dimensional versions, and optionally computes the gamma distribution.
 
