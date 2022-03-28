@@ -52,7 +52,7 @@ static double gamma3d_metric(const double X[_q(static 3)],
 }
 
 /** Floors vec into zs */
-static void gamma3d_floorz_vec(const double vec[_q(static 3)],
+static void gamma3d_vec_floorz(const double vec[_q(static 3)],
                                long zs[_q(static 3)])
 {
     zs[0] = STATIC_CAST(long, floor(vec[0]));
@@ -60,7 +60,7 @@ static void gamma3d_floorz_vec(const double vec[_q(static 3)],
     zs[2] = STATIC_CAST(long, floor(vec[2]));
 }
 
-static inline void gamma3d_add_vec(double augend[_q(static 3)],
+static inline void gamma3d_vec_add(double augend[_q(static 3)],
                                    const double addend[_q(static 3)])
 {
     augend[0] += addend[0];
@@ -68,7 +68,7 @@ static inline void gamma3d_add_vec(double augend[_q(static 3)],
     augend[2] += addend[2];
 }
 
-static inline void gamma3d_sub_vec(double minuend[_q(static 3)],
+static inline void gamma3d_vec_sub(double minuend[_q(static 3)],
                                    const double subtrahend[_q(static 3)])
 {
     minuend[0] -= subtrahend[0];
@@ -76,7 +76,7 @@ static inline void gamma3d_sub_vec(double minuend[_q(static 3)],
     minuend[2] -= subtrahend[2];
 }
 
-static inline void gamma3d_mul_vec(double dst[_q(static 3)],
+static inline void gamma3d_vec_mul(double dst[_q(static 3)],
                                    const double src[_q(static 3)])
 {
     dst[0] *= src[0];
@@ -84,16 +84,8 @@ static inline void gamma3d_mul_vec(double dst[_q(static 3)],
     dst[2] *= src[2];
 }
 
-static inline void gamma3d_div_vec(double dividend[_q(static 3)],
-                                   const double divisor[_q(static 3)])
-{
-    dividend[0] /= divisor[0];
-    dividend[1] /= divisor[1];
-    dividend[2] /= divisor[2];
-}
-
 /** Fused-multiply add: a * b + c */
-static inline void gamma3d_fma_vec(double a[_q(static 3)],
+static inline void gamma3d_vec_fma(double a[_q(static 3)],
                                    const double b[_q(static 3)],
                                    const double c[_q(static 3)])
 {
@@ -102,15 +94,8 @@ static inline void gamma3d_fma_vec(double a[_q(static 3)],
     a[2] = fma(a[2], b[2], c[2]);
 }
 
-static inline void gamma3d_negate_vec(double vec[_q(static 3)])
-{
-    vec[0] = -vec[0];
-    vec[1] = -vec[1];
-    vec[2] = -vec[2];
-}
-
 /** Casts z1 and z2 to doubles and stores them in order in dst */
-static inline void gamma3d_loadz_vec(double dst[_q(static 3)], long z1, long z2, long z3)
+static inline void gamma3d_vec_loadz(double dst[_q(static 3)], long z1, long z2, long z3)
 {
     dst[0] = STATIC_CAST(double, z1);
     dst[1] = STATIC_CAST(double, z2);
@@ -254,7 +239,7 @@ static double gamma3d_objective_function(const double X[_q(static 3)],
         )
     );
     gamma3d_copy_vec(r, X);
-    gamma3d_add_vec(r, Xm);
+    gamma3d_vec_add(r, Xm);
     rsqr = gamma3d_metric(r, S);
     return rsqr + f * f;
 }                                         
@@ -370,10 +355,10 @@ static int gamma3d_minimize_square(const struct gamma_analysis *gamma,
     double Xm[3];
     double interp[8];
     double S[3];
-    gamma3d_loadz_vec(Xm, cpoint[0], cpoint[1], cpoint[2]);
-    gamma3d_sub_vec(Xm, r_m);
+    gamma3d_vec_loadz(Xm, cpoint[0], cpoint[1], cpoint[2]);
+    gamma3d_vec_sub(Xm, r_m);
     gamma3d_copy_vec(S, calc->px_spacing);
-    gamma3d_mul_vec(S, S);
+    gamma3d_vec_mul(S, S);
     if (!gamma3d_cube_in_radius(Xm, S, *rmax)) {
         return 0;
     }
@@ -462,7 +447,7 @@ static double gamma3d_compute_point(const struct gamma_analysis *gamma,
 {
     long origin[3];
     double rmax = HUGE_VAL;
-    gamma3d_floorz_vec(r_m, origin);
+    gamma3d_vec_floorz(r_m, origin);
     gamma3d_fan_internal(gamma, calc, &rmax, origin, r_m, mdose);
     return sqrt(rmax / (gamma->dta * gamma->dta));
 }
@@ -558,7 +543,7 @@ static int gamma3d_point_passes(const struct gamma_analysis *gamma,
     /* volatile */ long origin[3];
     /* volatile */ double rmax = HUGE_VAL;
     /* volatile */ jmp_buf env;
-    gamma3d_floorz_vec(r_m, origin);
+    gamma3d_vec_floorz(r_m, origin);
     if (setjmp(env)) {
         return 1;
     }
@@ -583,8 +568,8 @@ static void gamma3d_compute_dist(struct gamma_analysis *gamma,
                     *gptr = GAMMA_SIG_VAL;
                     continue;
                 }
-                gamma3d_loadz_vec(a, i, j, k);
-                gamma3d_fma_vec(a, trns, shft);
+                gamma3d_vec_loadz(a, i, j, k);
+                gamma3d_vec_fma(a, trns, shft);
                 *gptr = gamma3d_compute_point(gamma, calc, a, *mptr);
             }
         }
@@ -607,8 +592,8 @@ static double gamma3d_compute_pass_rate(struct gamma_analysis *gamma,
                 if (*mptr < gamma->threshold) {
                     continue;
                 }
-                gamma3d_loadz_vec(a, i, j, k);
-                gamma3d_fma_vec(a, trns, shft);
+                gamma3d_vec_loadz(a, i, j, k);
+                gamma3d_vec_fma(a, trns, shft);
                 if (gamma3d_point_passes(gamma, calc, a, *mptr)) {
                     passed++;
                 }

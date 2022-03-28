@@ -53,28 +53,28 @@ static double gamma2d_metric(const double X[_q(static 2)],
 }
 
 /** Floors vec into zs */
-static void gamma2d_floorz_vec(const double vec[_q(static 2)],
+static void gamma2d_vec_floorz(const double vec[_q(static 2)],
                                long zs[_q(static 2)])
 {
     zs[0] = STATIC_CAST(long, floor(vec[0]));
     zs[1] = STATIC_CAST(long, floor(vec[1]));
 }
 
-static inline void gamma2d_add_vec(double augend[_q(static 2)],
+static inline void gamma2d_vec_add(double augend[_q(static 2)],
                                    const double addend[_q(static 2)])
 {
     augend[0] += addend[0];
     augend[1] += addend[1];
 }
 
-static inline void gamma2d_sub_vec(double minuend[_q(static 2)],
+static inline void gamma2d_vec_sub(double minuend[_q(static 2)],
                                    const double subtrahend[_q(static 2)])
 {
     minuend[0] -= subtrahend[0];
     minuend[1] -= subtrahend[1];
 }
 
-static inline void gamma2d_mul_vec(double dst[_q(static 2)],
+static inline void gamma2d_vec_mul(double dst[_q(static 2)],
                                    const double src[_q(static 2)])
 {
     dst[0] *= src[0];
@@ -82,7 +82,7 @@ static inline void gamma2d_mul_vec(double dst[_q(static 2)],
 }
 
 /** Fused-multiply add: a * b + c */
-static inline void gamma2d_fma_vec(double a[_q(static 2)],
+static inline void gamma2d_vec_fma(double a[_q(static 2)],
                                    const double b[_q(static 2)],
                                    const double c[_q(static 2)])
 {
@@ -91,20 +91,20 @@ static inline void gamma2d_fma_vec(double a[_q(static 2)],
 }
 
 /** Casts z1 and z2 to doubles and stores them in order in dst */
-static inline void gamma2d_loadz_vec(double dst[_q(static 2)], long z1, long z2)
+static inline void gamma2d_vec_loadz(double dst[_q(static 2)], long z1, long z2)
 {
     dst[0] = STATIC_CAST(double, z1);
     dst[1] = STATIC_CAST(double, z2);
 }
 
 /** Loads dst with doubles x1 and x2, in order */
-static inline void gamma2d_loadpd_vec(double dst[_q(static 2)], double x1, double x2)
+static inline void gamma2d_vec_loadpd(double dst[_q(static 2)], double x1, double x2)
 {
     dst[0] = x1;
     dst[1] = x2;
 }
 
-static inline void gamma2d_copy_vec(double dst[_q(static 2)], const double src[_q(static 2)])
+static inline void gamma2d_vec_copy(double dst[_q(static 2)], const double src[_q(static 2)])
 {
     memcpy(dst, src, sizeof *dst * 2);
 }
@@ -196,8 +196,8 @@ static double gamma2d_objective_function(const double X[_q(static 2)],
         fma(X[0], interp[3], interp[2]),
         fma(X[0], interp[1], interp[0])
     );
-    gamma2d_copy_vec(r, X);
-    gamma2d_add_vec(r, Xm);
+    gamma2d_vec_copy(r, X);
+    gamma2d_vec_add(r, Xm);
     rsqr = gamma2d_metric(r, S);
     return rsqr + f * f;
 }                                         
@@ -252,7 +252,7 @@ static double gamma2d_line_search(const double S[_q(static 2)],
 {
     double X[2];
     double obj, last;
-    gamma2d_loadpd_vec(X, 0.0, 0.0);
+    gamma2d_vec_loadpd(X, 0.0, 0.0);
     obj = gamma2d_objective_function(X, S, Xm, interp);
     do {
         last = obj;
@@ -279,10 +279,10 @@ static int gamma2d_minimize_square(const struct gamma_analysis *gamma,
     double Xm[2];
     double interp[4];
     double S[2];
-    gamma2d_loadz_vec(Xm, cpoint[0], cpoint[1]);
-    gamma2d_sub_vec(Xm, r_m);
-    gamma2d_copy_vec(S, calc->px_spacing);
-    gamma2d_mul_vec(S, S);
+    gamma2d_vec_loadz(Xm, cpoint[0], cpoint[1]);
+    gamma2d_vec_sub(Xm, r_m);
+    gamma2d_vec_copy(S, calc->px_spacing);
+    gamma2d_vec_mul(S, S);
     if (!gamma2d_square_in_radius(Xm, S, *rmax)) {
         return 0;
     }
@@ -344,7 +344,7 @@ static double gamma2d_compute_point(const struct gamma_analysis *gamma,
 {
     long origin[2];
     double rmax = HUGE_VAL;
-    gamma2d_floorz_vec(r_m, origin);
+    gamma2d_vec_floorz(r_m, origin);
     gamma2d_fan_vertical(gamma, calc, &rmax, origin, r_m, mdose);
     return sqrt(rmax / (gamma->dta * gamma->dta));
 }
@@ -422,7 +422,7 @@ static int gamma2d_point_passes(const struct gamma_analysis *gamma,
     /* volatile */ long origin[2];
     /* volatile */ double rmax = HUGE_VAL;
     /* volatile */ jmp_buf env;
-    gamma2d_floorz_vec(r_m, origin);
+    gamma2d_vec_floorz(r_m, origin);
     if (setjmp(env)) {
         return 1;
     }
@@ -446,8 +446,8 @@ static void gamma2d_compute_dist(struct gamma_analysis *gamma,
                 *gptr = GAMMA_SIG_VAL;
                 continue;
             }
-            gamma2d_loadz_vec(a, i, j);
-            gamma2d_fma_vec(a, trns, shft);
+            gamma2d_vec_loadz(a, i, j);
+            gamma2d_vec_fma(a, trns, shft);
             *gptr = gamma2d_compute_point(gamma, calc, a, *mptr);
         }
     }
@@ -468,8 +468,8 @@ static double gamma2d_compute_pass_rate(struct gamma_analysis *gamma,
             if (*mptr < gamma->threshold) {
                 continue;
             }
-            gamma2d_loadz_vec(a, i, j);
-            gamma2d_fma_vec(a, trns, shft);
+            gamma2d_vec_loadz(a, i, j);
+            gamma2d_vec_fma(a, trns, shft);
             if (gamma2d_point_passes(gamma, calc, a, *mptr)) {
                 passed++;
             }
