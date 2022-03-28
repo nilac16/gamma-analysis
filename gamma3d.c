@@ -102,7 +102,7 @@ static inline void gamma3d_vec_loadz(double dst[_q(static 3)], long z1, long z2,
     dst[2] = STATIC_CAST(double, z3);
 }
 
-static inline void gamma3d_copy_vec(double dst[_q(static 3)], const double src[_q(static 3)])
+static inline void gamma3d_vec_copy(double dst[_q(static 3)], const double src[_q(static 3)])
 {
     memcpy(dst, src, sizeof *dst * 3);
 }
@@ -238,7 +238,7 @@ static double gamma3d_objective_function(const double X[_q(static 3)],
             fma(X[0], interp[1], interp[0])
         )
     );
-    gamma3d_copy_vec(r, X);
+    gamma3d_vec_copy(r, X);
     gamma3d_vec_add(r, Xm);
     rsqr = gamma3d_metric(r, S);
     return rsqr + f * f;
@@ -357,7 +357,7 @@ static int gamma3d_minimize_square(const struct gamma_analysis *gamma,
     double S[3];
     gamma3d_vec_loadz(Xm, cpoint[0], cpoint[1], cpoint[2]);
     gamma3d_vec_sub(Xm, r_m);
-    gamma3d_copy_vec(S, calc->px_spacing);
+    gamma3d_vec_copy(S, calc->px_spacing);
     gamma3d_vec_mul(S, S);
     if (!gamma3d_cube_in_radius(Xm, S, *rmax)) {
         return 0;
